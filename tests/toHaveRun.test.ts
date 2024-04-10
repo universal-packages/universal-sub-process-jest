@@ -70,6 +70,29 @@ SubProcesses were:
     "command": "echo",
   }`
     )
+
+    try {
+      expect(SubProcess).toHaveRun('echo test3')
+    } catch (e) {
+      error = e
+    }
+
+    expect(stripAnsi(error.message)).toBe(
+      `expected SubProcess to have run the given command, but it did not
+SubProcesses were:
+- Expected
++ Received
+
+- echo test3
++ echo test
+
+- Expected
++ Received
+
+- echo test3
++ echo test2
+`
+    )
   })
 
   it('fails and shows the if a command was run but it was not expected', async (): Promise<void> => {

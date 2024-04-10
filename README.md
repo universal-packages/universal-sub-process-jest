@@ -37,6 +37,7 @@ it('should logged log', async () => {
   await subProcess.run()
 
   expect(SubProcess).toHaveRun({ command: 'echo', args: ['Hello World'] })
+  expect(SubProcess).toHaveRun('echo Hello World')
 })
 ```
 

@@ -8,8 +8,8 @@ afterEach(() => {
 })
 
 function toHaveRun(_subProcess: SubProcess, commandOrSubProcess: string | Omit<SubProcessOptions, 'engine' | 'engineOptions'>): jest.CustomMatcherResult {
-  const finalSubProcess: SubProcessOptions =
-    typeof commandOrSubProcess === 'string' ? { command: commandOrSubProcess.split(' ')[0], args: commandOrSubProcess.split(' ').slice(1) } : commandOrSubProcess
+  const commandIsString = typeof commandOrSubProcess === 'string'
+  const finalSubProcess: SubProcessOptions = commandIsString ? { command: commandOrSubProcess.split(' ')[0], args: commandOrSubProcess.split(' ').slice(1) } : commandOrSubProcess
 
   const subProcessKeys = Object.keys(finalSubProcess)
   const ranSubProcesses = TestEngine.commandHistory.map((inHistorySubProcess) => {
@@ -28,17 +28,25 @@ function toHaveRun(_subProcess: SubProcess, commandOrSubProcess: string | Omit<S
 
   if (pass) {
     return {
-      message: () => `expected SubProcess to not have run the given command, but it did.`,
+      message: () => 'expected SubProcess to not have run the given command, but it did.',
       pass
     }
   } else {
     return {
       message: () => {
         if (ranSubProcesses.length === 0) {
-          return `expected SubProcess to have run the given command, but no commands were run at all.`
+          return 'expected SubProcess to have run the given command, but no commands were run at all.'
         } else {
           return `expected SubProcess to have run the given command, but it did not\nSubProcesses were:\n${ranSubProcesses
-            .map((ranSubProcess: SubProcessOptions) => this.utils.diff(finalSubProcess, ranSubProcess))
+            .map((ranSubProcess: SubProcessOptions) => {
+              if (commandIsString) {
+                const commandFromOptions = `${ranSubProcess.command} ${ranSubProcess.args.join(' ')}`
+
+                return this.utils.diff(commandOrSubProcess, commandFromOptions) + '\n'
+              } else {
+                return this.utils.diff(finalSubProcess, ranSubProcess)
+              }
+            })
             .join('\n')}`
         }
       },
